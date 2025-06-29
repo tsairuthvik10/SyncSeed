@@ -3,27 +3,16 @@ using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
-    public GameObject rhythmMiniGamePanel;
-    public Button rhythmButton;
+    public static UIManager Instance;
+    public Text scoreText;
 
-    void Start()
+    void Awake()
     {
-        rhythmMiniGamePanel.SetActive(false);
+        Instance = this;
     }
 
-    public void ShowRhythmMiniGame()
+    public void UpdateScore(int score)
     {
-        rhythmMiniGamePanel.SetActive(true);
-        AnimateScale(rhythmMiniGamePanel.transform);
-    }
-
-    public void HideRhythmMiniGame()
-    {
-        rhythmMiniGamePanel.SetActive(false);
-    }
-
-    public void AnimateScale(Transform target)
-    {
-        LeanTween.scale(target.gameObject, Vector3.one * 1.2f, 0.3f).setEasePunch();
+        scoreText.text = "Score: " + score;
     }
 }
