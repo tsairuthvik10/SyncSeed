@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "234018309958",
+    "project_id": "syncseedfirebase",
+    "storage_bucket": "syncseedfirebase.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:234018309958:android:216b09f0fa4d61eda6c747",
+        "android_client_info": {
+          "package_name": "com.TSR.SyncSeed"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBATIZXGFGHNNlegmMD8clVEqCWj0-Thus"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

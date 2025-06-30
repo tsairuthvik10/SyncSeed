@@ -5,21 +5,61 @@ using System.Collections.Generic;
 
 public class MirrorManager : MonoBehaviour
 {
-    public GameObject mirrorPrefab;
-    private ARRaycastManager raycastManager;
-    private List<ARRaycastHit> hits = new();
+    public static MirrorManager Instance;
 
-    void Start()
+    public GameObject mirrorPrefab;
+    public ARRaycastManager raycastManager;
+    public ParticleSystem mirrorSpawnEffect;
+
+    public int maxMirrorsPerLevel = 3;
+    private int currentMirrorCount = 0;
+
+    private void Awake()
     {
-        raycastManager = FindObjectOfType<ARRaycastManager>();
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
     }
 
-    public void PlaceMirror(Vector2 screenPosition)
+    public void PlaceMirror()
     {
-        if (raycastManager.Raycast(screenPosition, hits, TrackableType.PlaneWithinPolygon))
+        if (currentMirrorCount >= maxMirrorsPerLevel)
+        {
+            Debug.Log("Mirror limit reached.");
+            return;
+        }
+
+        List<ARRaycastHit> hits = new List<ARRaycastHit>();
+        if (raycastManager.Raycast(new Vector2(Screen.width / 2, Screen.height / 2), hits, TrackableType.Planes))
         {
             Pose hitPose = hits[0].pose;
-            Instantiate(mirrorPrefab, hitPose.position, hitPose.rotation);
+            Vector3 directionToCamera = Camera.main.transform.position - hitPose.position;
+            Quaternion faceCameraRotation = Quaternion.LookRotation(directionToCamera.normalized);
+            GameObject mirror = Instantiate(mirrorPrefab, hitPose.position, faceCameraRotation);
+            currentMirrorCount++;
+
+            if (mirrorSpawnEffect != null)
+            {
+                ParticleSystem effect = Instantiate(mirrorSpawnEffect, mirror.transform.position, Quaternion.identity);
+                effect.Play();
+                Destroy(effect.gameObject, 2f);
+            }
         }
+    }
+
+    public void SetMirrorLimit(int newLimit)
+    {
+        maxMirrorsPerLevel = newLimit;
+        currentMirrorCount = 0;
+    }
+
+    public void ResetMirrorCount()
+    {
+        currentMirrorCount = 0;
     }
 }

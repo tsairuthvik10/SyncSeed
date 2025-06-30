@@ -2,21 +2,26 @@ using UnityEngine;
 
 public class ProceduralLevelGenerator : MonoBehaviour
 {
-    public static ProceduralLevelGenerator Instance;
     public GameObject rhythmNodePrefab;
+    public Transform spawnRoot;
+    public int baseNodeCount = 3;
+    public float baseBeatInterval = 2.0f;
 
-    void Awake()
-    {
-        Instance = this;
-    }
+    public int currentLevel = 1;
 
-    public void GenerateLevel(int difficulty)
+    public void GenerateLevel()
     {
-        int nodeCount = Mathf.Clamp(difficulty + 2, 3, 10);
+        int nodeCount = baseNodeCount + currentLevel;
+        float beatInterval = Mathf.Max(0.5f, baseBeatInterval - currentLevel * 0.1f);
+
         for (int i = 0; i < nodeCount; i++)
         {
-            Vector3 pos = new Vector3(Random.Range(-1.5f, 1.5f), 0, Random.Range(1f, 3f));
-            Instantiate(rhythmNodePrefab, pos, Quaternion.identity);
+            Vector3 position = spawnRoot.position + Random.insideUnitSphere * 1.5f;
+            position.y = spawnRoot.position.y;
+            Instantiate(rhythmNodePrefab, position, Quaternion.identity, spawnRoot);
         }
+
+        RhythmManager.Instance.SetBeatInterval(beatInterval);
+        MirrorManager.Instance.SetMirrorLimit(Mathf.Max(1, 3 - currentLevel / 2));
     }
 }

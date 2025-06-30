@@ -2,10 +2,11 @@ using UnityEngine;
 
 public class RhythmNode : MonoBehaviour
 {
-    public float beatInterval = 1f;
+    public float beatInterval = 1.0f; // Time between pulses
     private float timer = 0f;
+    private bool isHit = false;
 
-    void Update()
+    private void Update()
     {
         timer += Time.deltaTime;
         if (timer >= beatInterval)
@@ -17,13 +18,40 @@ public class RhythmNode : MonoBehaviour
 
     void Pulse()
     {
-        HapticsManager.TriggerPulse();
+        // Optional: Visual animation pulse
         AnimationController.Ping(transform);
+
+        // Haptic feedback for rhythm beat
+#if UNITY_ANDROID && !UNITY_EDITOR
+        HapticsManager.TriggerPulse();
+#endif
     }
 
-    public void OnPlayerTap()
+    private void OnTriggerEnter(Collider other)
     {
-        GameManager.Instance.AddScore(10);
-        Destroy(gameObject);
+        if (isHit) return;
+
+        if (other.CompareTag("Player"))
+        {
+            isHit = true;
+
+            // Add score
+            GameManager.Instance.AddScore(10);
+
+            // Play sound
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlayRhythmHitSound();
+
+            // Haptic on successful hit
+#if UNITY_ANDROID && !UNITY_EDITOR
+            Handheld.Vibrate();
+#endif
+
+            // Visual feedback
+            LeanTween.scale(gameObject, Vector3.one * 1.2f, 0.1f).setEasePunch();
+
+            // Destroy after short delay
+            Destroy(gameObject, 0.3f);
+        }
     }
 }
