@@ -3,41 +3,31 @@ using TMPro;
 
 public class UIManager : MonoBehaviour
 {
-    [Header("UI Elements")]
-    public GameObject leaderboardContainer;
+    public static UIManager Instance { get; private set; }
+
     public TextMeshProUGUI scoreText;
+    public GameObject leaderboardPanel;
 
-    void Start()
+    private void Awake()
     {
-        if (leaderboardContainer != null)
-            leaderboardContainer.SetActive(false);
-
-        UpdateScore(0); // Initialize score display
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+        }
+        else
+        {
+            Instance = this;
+        }
     }
 
-    public void UpdateScore(int newScore)
+    public void UpdateScore(int score)
     {
-        if (scoreText != null)
-        {
-            scoreText.text = $"{newScore}";
-        }
+        scoreText.text = "Score: " + score.ToString();
     }
 
     public void ShowLeaderboard()
     {
-        if (leaderboardContainer != null)
-        {
-            leaderboardContainer.SetActive(true);
-            // You could trigger an animation here if needed
-            // e.g. Animator.SetTrigger("Show")
-        }
-    }
-
-    public void ToggleLeaderboard()
-    {
-        if (leaderboardContainer != null)
-        {
-            leaderboardContainer.SetActive(!leaderboardContainer.activeSelf);
-        }
+        leaderboardPanel.SetActive(true);
+        LeaderboardManager.Instance.FetchLeaderboard();
     }
 }

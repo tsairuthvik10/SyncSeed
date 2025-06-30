@@ -6,20 +6,50 @@ using UnityEngine;
 
 public class LeaderboardManager : MonoBehaviour
 {
+    public static LeaderboardManager Instance { get; private set; }
+
     public Transform leaderboardContainer;
     public GameObject leaderboardEntryPrefab;
     FirebaseFirestore db;
 
-    void Start()
+    void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+        }
+        else
+        {
+            Instance = this;
+        }
+
         db = FirebaseFirestore.DefaultInstance;
-        FetchLeaderboard();
+    }
+
+    public void SubmitScore(string playerName, int score)
+    {
+        if (string.IsNullOrEmpty(playerName)) return;
+
+        var entry = new Dictionary<string, object>
+        {
+            {"name", playerName},
+            {"score", score},
+            {"timestamp", Timestamp.GetCurrentTimestamp()}
+        };
+
+        db.Collection("leaderboard").AddAsync(entry).ContinueWithOnMainThread(task =>
+        {
+            if (task.IsCompleted)
+            {
+                Debug.Log("Score submitted to leaderboard");
+            }
+        });
     }
 
     public void FetchLeaderboard()
     {
         db.Collection("leaderboard")
-          .OrderBy("score") // Ascending only
+          .OrderBy("score")
           .Limit(10)
           .GetSnapshotAsync().ContinueWithOnMainThread(task =>
           {
@@ -29,16 +59,18 @@ public class LeaderboardManager : MonoBehaviour
                       Destroy(child.gameObject);
 
                   List<DocumentSnapshot> documents = new List<DocumentSnapshot>(task.Result.Documents);
-                  documents.Reverse(); // flip ascending → descending
+                  documents.Reverse();
 
                   foreach (var doc in documents)
                   {
-                      string player = doc.Id;
+                      string name = "Unknown";
                       int score = 0;
+
+                      doc.TryGetValue("name", out name);
                       doc.TryGetValue("score", out score);
 
                       GameObject entry = Instantiate(leaderboardEntryPrefab, leaderboardContainer);
-                      entry.GetComponentInChildren<TMPro.TMP_Text>().text = player + ": " + score;
+                      entry.GetComponentInChildren<TMP_Text>().text = name + ": " + score;
                   }
               }
           });

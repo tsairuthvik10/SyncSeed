@@ -1,5 +1,7 @@
 using UnityEngine;
 
+using UnityEngine;
+
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
@@ -13,7 +15,6 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        // Singleton setup
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -60,7 +61,10 @@ public class GameManager : MonoBehaviour
         Debug.Log($"Level {currentLevel} ended. Final Score: {playerScore}");
 
         if (uiManager != null)
+        {
             uiManager.ShowLeaderboard();
+            LeaderboardManager.Instance.SubmitScore(playerName, playerScore);
+        }
 
         FindObjectOfType<MenuUI>().ShowLeaderboard();
     }
